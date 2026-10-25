@@ -225,12 +225,15 @@ st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.08); margin: 28px 0
 st.markdown("### 🔮 Real-Time Flight Risk & On-Time Predictor")
 st.markdown("Move any slider or change any value below — risk scores recompute **instantaneously**:")
 
-# State management for preset buttons
-if "carrier_choice" not in st.session_state:
-    st.session_state.carrier_choice = "WN" if "WN" in df["carrier"].values else df["carrier"].iloc[0]
-    st.session_state.day_choice = "Friday"
-    st.session_state.hour_choice = 18
-    st.session_state.dist_choice = 650
+# Default session state initialization (Widget keys use karenge)
+if "carrier_select" not in st.session_state:
+    st.session_state.carrier_select = "WN" if "WN" in df["carrier"].values else df["carrier"].iloc[0]
+if "day_select" not in st.session_state:
+    st.session_state.day_select = "Friday"
+if "hour_slider" not in st.session_state:
+    st.session_state.hour_slider = 18
+if "dist_input" not in st.session_state:
+    st.session_state.dist_input = 650
 
 # Benchmark Preset Buttons
 b_col1, b_col2, b_col3 = st.columns(3)
@@ -238,75 +241,65 @@ b_col1, b_col2, b_col3 = st.columns(3)
 with b_col1:
     if st.button("🟢 Scenario A: Best-Case (High On-Time)", use_container_width=True):
         best_carrier = "HA" if "HA" in df["carrier"].values else df.sort_values("avg_delay_min").iloc[0]["carrier"]
-        st.session_state.carrier_choice = best_carrier
-        st.session_state.day_choice = "Tuesday"
-        st.session_state.hour_choice = 11
-        st.session_state.dist_choice = 2500
+        st.session_state.carrier_select = best_carrier
+        st.session_state.day_select = "Tuesday"
+        st.session_state.hour_slider = 11
+        st.session_state.dist_input = 2500
         st.rerun()
 
 with b_col2:
     if st.button("🔴 Scenario B: Worst-Case (High Delay Risk)", use_container_width=True):
         worst_carrier = "EV" if "EV" in df["carrier"].values else df.sort_values("avg_delay_min", ascending=False).iloc[0]["carrier"]
-        st.session_state.carrier_choice = worst_carrier
-        st.session_state.day_choice = "Friday"
-        st.session_state.hour_choice = 19
-        st.session_state.dist_choice = 180
+        st.session_state.carrier_select = worst_carrier
+        st.session_state.day_select = "Friday"
+        st.session_state.hour_slider = 19
+        st.session_state.dist_input = 180
         st.rerun()
 
 with b_col3:
     if st.button("🔄 Reset Parameters", use_container_width=True):
-        st.session_state.carrier_choice = df["carrier"].iloc[0]
-        st.session_state.day_choice = "Wednesday"
-        st.session_state.hour_choice = 14
-        st.session_state.dist_choice = 750
+        st.session_state.carrier_select = df["carrier"].iloc[0]
+        st.session_state.day_select = "Wednesday"
+        st.session_state.hour_slider = 14
+        st.session_state.dist_input = 750
         st.rerun()
 
-# Dynamic Input Row (No form wrapper, updates on fly)
+# Dynamic Input Row (Direct session_state se sync honge)
 p1, p2, p3, p4 = st.columns(4)
 
 with p1:
     carrier_list = df["carrier"].tolist()
-    carrier_idx = carrier_list.index(st.session_state.carrier_choice) if st.session_state.carrier_choice in carrier_list else 0
     selected_carrier = st.selectbox(
         "Operating Carrier",
         options=carrier_list,
-        index=carrier_idx,
         format_func=lambda x: CARRIER_NAMES.get(x, x),
         key="carrier_select"
     )
-    st.session_state.carrier_choice = selected_carrier
 
 with p2:
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    day_idx = days.index(st.session_state.day_choice) if st.session_state.day_choice in days else 4
     selected_day = st.selectbox(
         "Departure Day",
         options=days,
-        index=day_idx,
         key="day_select"
     )
-    st.session_state.day_choice = selected_day
 
 with p3:
     selected_hour = st.slider(
         "Scheduled Departure Hour (24h)",
         min_value=0,
         max_value=23,
-        value=st.session_state.hour_choice,
         key="hour_slider"
     )
-    st.session_state.hour_choice = selected_hour
 
 with p4:
     selected_distance = st.number_input(
         "Flight Distance (Miles)",
         min_value=50,
         max_value=5000,
-        value=st.session_state.dist_choice,
         step=50,
         key="dist_input"
     )
-    st.session_state.dist_choice = selected_distance
 
 # Instant calculation logic
 row = df[df["carrier"] == selected_carrier].iloc[0]
@@ -337,8 +330,6 @@ with r3:
         st.warning("### 🟡 Moderate Operational Risk\nBuffer advised for connecting flights.")
     else:
         st.error("### 🔴 High Delay Probability\nCongested route window detected.")
-
-st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.08); margin: 28px 0;'>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # SECTION 4: LIVE CASSANDRA RAW RECORDS
