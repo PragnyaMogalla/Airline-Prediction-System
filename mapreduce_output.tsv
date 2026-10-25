@@ -1,0 +1,2 @@
+docker cp mapreduce_output.tsv cassandra_db:/mapreduce_output.tsv
+docker exec -it cassandra_db cqlsh -e "TRUNCATE airline_analytics.carrier_metrics; COPY airline_analytics.carrier_metrics (carrier, total_flights, total_delay_min, avg_delay_min, total_cancelled, cancellation_rate) FROM '/mapreduce_output.tsv' WITH DELIMITER = '\t';"cat: `/airline_data/output/part-00000': No such file or directory
