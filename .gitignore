@@ -1,1 +1,5 @@
 2009.csv
+__pycache__/
+.env
+hadoop.env
+docker-compose.yml
