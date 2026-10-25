@@ -2,6 +2,7 @@
 
 An end-to-end distributed Big Data pipeline designed to process, aggregate, and visualize over **6.4 million commercial airline records** using **Hadoop HDFS, Hadoop MapReduce Streaming, Apache Cassandra, and Streamlit**.
 
+Deployed Link: https://airline-prediction-system.onrender.com/
 ## 🏛️ System Architecture
 
 ```text
